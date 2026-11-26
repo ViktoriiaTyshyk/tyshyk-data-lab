@@ -1,0 +1,35 @@
+--sales_wh
+
+CREATE OR ALTER VIEW dbo.v_monthly_sales AS
+SELECT 
+    d.Year AS order_year, 
+    d.Month AS order_month,
+    d.MonthName AS month_name,
+    COALESCE(c.CountryRegion, 'Unknown') AS sales_region,
+    COUNT(*) AS orders_cnt,
+    SUM(f.Quantity) AS units_sold,
+    SUM(f.SalesTotal) AS revenue
+FROM dbo.FactSalesOrder f
+INNER JOIN dbo.DimDate d
+ON f.SalesOrderDateKey=d.DateKey
+LEFT JOIN dbo.DimCustomer c
+ON f.CustomerKey=c.CustomerKey
+GROUP BY
+    d.Year,
+    d.Month,
+    d.MonthName,
+    COALESCE(c.CountryRegion, 'Unknown');
+
+GO
+
+SELECT 
+    order_year, 
+    order_month, 
+    month_name, 
+    sales_region, 
+    orders_cnt, 
+    units_sold, 
+    revenue
+FROM dbo.v_monthly_sales
+WHERE order_year=2022
+ORDER BY order_month, sales_region;
